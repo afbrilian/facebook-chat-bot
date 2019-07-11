@@ -36,7 +36,7 @@ export class AppController {
         const webhookEvent: FbMessage = entry.messaging[0];
         if (webhookEvent && webhookEvent.message && webhookEvent.message.text) {
           console.log(webhookEvent);
-          this.appService.send(webhookEvent.sender.id, { text: webhookEvent.message.text });
+          this.appService.send(webhookEvent);
         }
       });
       res.status(200).send('EVENT_RECEIVED');

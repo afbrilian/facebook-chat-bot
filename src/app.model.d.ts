@@ -17,4 +17,4 @@ interface Message {
   text: string;
 }
 
-export { ChatState, History, UserData, Message };
+export { History, UserData, Message };
