@@ -16,10 +16,8 @@ interface FbMessage {
 }
 
 interface FbReply {
-  message: {
-    text: string;
-    quick_replies?: FbQuickReply[];
-  };
+  text: string;
+  quick_replies?: FbQuickReply[];
 }
 
 interface FbQuickReply {

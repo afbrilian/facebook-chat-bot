@@ -1,9 +1,10 @@
 import { Injectable, HttpService } from '@nestjs/common';
 import { HttpClientService } from './http-client.service';
-import { FbMessage } from './fb/fb-responses';
+import { FbMessage, FbReply } from './fb/fb-responses';
 import { MemoryService } from './memory.service';
-import { History } from './app.model';
+import { History, Message } from './app.model';
 import { filter, map } from 'rxjs/operators';
+import { ChatState } from './app.state';
 
 @Injectable()
 export class AppService {
@@ -22,6 +23,29 @@ export class AppService {
   }
 
   message(history: History, fbMessage: FbMessage): void {
-    this.httpClientService.send(history.id, { text: fbMessage.message.text });
+    let message: FbReply;
+
+    const chat: Message = {
+      id: fbMessage.message.mid,
+      text: fbMessage.message.text,
+      historyId: history.id
+    };
+
+    switch (history.state) {
+      case ChatState.INIT:
+        this.memoryService.updateHistory(history.id, ChatState.HI, null, chat).subscribe((h) => {
+          message = { text: 'Hi! May we know your first name?' };
+          this.httpClientService.send(h.id, message);
+        });
+        break;
+      case ChatState.HI:
+        break;
+      case ChatState.FIRST_NAME:
+        break;
+      case ChatState.BIRTH_DATE:
+        break;
+      case ChatState.DONE:
+        break;
+    }
   }
 }

@@ -1,11 +1,12 @@
 import { Injectable, HttpService } from '@nestjs/common';
 import { AxiosRequestConfig } from 'axios';
+import { FbReply } from './fb/fb-responses';
 
 @Injectable()
 export class HttpClientService {
   constructor(private readonly httpService: HttpService) {}
 
-  send(recipientId: string, message: any): void {
+  send(recipientId: string, message: FbReply): void {
     const body = {
       recipient: { id: recipientId },
       message
