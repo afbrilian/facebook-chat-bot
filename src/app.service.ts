@@ -3,7 +3,7 @@ import { HttpClientService } from './http-client.service';
 import { FbMessage, FbReply } from './fb/fb-responses';
 import { MemoryService } from './memory.service';
 import { History, Message } from './app.model';
-import { filter, map } from 'rxjs/operators';
+import { filter, map, finalize } from 'rxjs/operators';
 import { ChatState } from './app.state';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class AppService {
       .getById(fbMessage.sender.id)
       .pipe(
         filter((history) => !history || (history && history.state !== ChatState.DONE)),
-        map((history) => history ? history : this.memoryService.createHistory(fbMessage))
+        map((history) => (history ? history : this.memoryService.createHistory(fbMessage)))
       )
       .subscribe((history: History) => {
         this.message(history, fbMessage);
@@ -34,8 +34,15 @@ export class AppService {
     switch (history.state) {
       case ChatState.INIT:
         this.memoryService.updateHistory(history.id, ChatState.HI, null, chat).subscribe((h) => {
-          message = { text: 'Hi! May we know your first name?' };
-          this.httpClientService.send(h.id, message);
+          message = { text: 'Hi!' };
+          this.httpClientService
+            .send(h.id, message)
+            .pipe(
+              finalize(() =>
+                this.httpClientService.send(history.id, { text: 'May we know your first name?' }).subscribe()
+              )
+            )
+            .subscribe();
         });
         break;
       case ChatState.HI:
