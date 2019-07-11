@@ -14,7 +14,7 @@ export class AppService {
     this.memoryService
       .getById(fbMessage.sender.id)
       .pipe(
-        filter((history) => !history),
+        filter((history) => !history || (history && history.state !== ChatState.DONE)),
         map((history) => (history ? history : this.memoryService.createHistory(fbMessage)))
       )
       .subscribe((history: History) => {
@@ -34,7 +34,6 @@ export class AppService {
     switch (history.state) {
       case ChatState.INIT:
         this.memoryService.updateHistory(history.id, ChatState.HI, null, chat).subscribe((h) => {
-          console.log(h);
           message = { text: 'Hi! May we know your first name?' };
           this.httpClientService.send(h.id, message);
         });
