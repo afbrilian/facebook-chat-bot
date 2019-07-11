@@ -1,6 +1,7 @@
-import { Controller, Get, Req, Res, Post } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Controller, Get, Req, Res, Post, Query, Body } from '@nestjs/common';
+import { Response } from 'express';
 import { AppService } from './app.service';
+import { FbMessageEntry, FbEntry, FbMessage } from './fb/fb-responses';
 
 @Controller()
 export class AppController {
@@ -12,13 +13,13 @@ export class AppController {
   }
 
   @Get('webhook')
-  getWebhook(@Req() req: Request, @Res() res: Response): void {
+  getWebhook(
+    @Query('hub.mode') mode: string,
+    @Query('hub.verify_token') token: string,
+    @Query('hub.challenge') challenge: string,
+    @Res() res: Response
+  ): void {
     const VERIFY_TOKEN = 'testBot_verify_token>';
-
-    const mode = req.query['hub.mode'];
-    const token = req.query['hub.verify_token'];
-    const challenge = req.query['hub.challenge'];
-
     if (mode && token) {
       if (mode === 'subscribe' && token === VERIFY_TOKEN) {
         res.status(200).send(challenge);
@@ -29,11 +30,10 @@ export class AppController {
   }
 
   @Post('webhook')
-  postWebHook(@Req() req: Request, @Res() res: Response): void {
-    const body = req.body;
+  postWebHook(@Body() body: FbMessageEntry, @Res() res: Response): void {
     if (body.object === 'page') {
-      body.entry.forEach((entry) => {
-        const webhookEvent = entry.messaging[0];
+      body.entry.forEach((entry: FbEntry) => {
+        const webhookEvent: FbMessage = entry.messaging[0];
         if (webhookEvent && webhookEvent.message && webhookEvent.message.text) {
           console.log(webhookEvent);
           this.appService.send(webhookEvent.sender.id, { text: webhookEvent.message.text });
