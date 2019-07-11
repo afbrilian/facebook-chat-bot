@@ -7,10 +7,12 @@ export class HttpClientService {
   constructor(private readonly httpService: HttpService) {}
 
   send(recipientId: string, message: FbReply): void {
+    console.log(message);
     const body = {
       recipient: { id: recipientId },
       message
     };
+    console.log(body);
 
     const config: AxiosRequestConfig = {
       headers: { 'Content-Type': 'application/json' },

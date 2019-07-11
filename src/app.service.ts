@@ -34,6 +34,7 @@ export class AppService {
     switch (history.state) {
       case ChatState.INIT:
         this.memoryService.updateHistory(history.id, ChatState.HI, null, chat).subscribe((h) => {
+          console.log(h);
           message = { text: 'Hi! May we know your first name?' };
           this.httpClientService.send(h.id, message);
         });
