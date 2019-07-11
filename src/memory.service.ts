@@ -13,14 +13,14 @@ export class MemoryService {
     return of(this.histories.find((history) => history.id === id));
   }
 
-  createHistory(fbMessage: FbMessage): Observable<History> {
+  createHistory(fbMessage: FbMessage): History {
     const history: History = {
       id: fbMessage.sender.id,
       data: null,
       state: ChatState.INIT
     };
     this.histories.push(history);
-    return of(history);
+    return history;
   }
 
   updateHistory(id: string, nextState: ChatState, data: UserData, message: Message): Observable<History> {

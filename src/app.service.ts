@@ -15,7 +15,7 @@ export class AppService {
       .getById(fbMessage.sender.id)
       .pipe(
         filter((history) => !history || (history && history.state !== ChatState.DONE)),
-        map((history) => (history ? history : this.memoryService.createHistory(fbMessage)))
+        map((history) => history ? history : this.memoryService.createHistory(fbMessage))
       )
       .subscribe((history: History) => {
         this.message(history, fbMessage);
