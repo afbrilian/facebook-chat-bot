@@ -1,15 +1,34 @@
-import { Controller, Get, Req, Res, Post, Query, Body } from '@nestjs/common';
+import { Controller, Get, Res, Post, Query, Body, Param, Delete } from '@nestjs/common';
 import { Response } from 'express';
 import { AppService } from './app.service';
 import { FbMessageEntry, FbEntry, FbMessage } from './fb/fb-responses';
+import { Message } from './app.model';
+import { MemoryService } from './memory.service';
+import { map } from 'rxjs/operators';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService, private readonly memoryService: MemoryService) {}
 
   @Get()
   getHello(): string {
     return 'facebook chat bot WebHook';
+  }
+
+  @Get('messages')
+  getMessages(): Message[] {
+    return this.memoryService.getAllChatHistory();
+  }
+
+  @Get('messages/:id')
+  getMessageById(@Param('id') id: string): Message {
+    return this.memoryService.getChatHistory(id);
+  }
+
+  @Delete('messages/:id')
+  deleteMessageById(@Param('id') id: string): string {
+    this.memoryService.deleteChatHistory(id);
+    return `chat successfully deleted with id: ${id}`;
   }
 
   @Get('webhook')
@@ -35,7 +54,6 @@ export class AppController {
       body.entry.forEach((entry: FbEntry) => {
         const webhookEvent: FbMessage = entry.messaging[0];
         if (webhookEvent && webhookEvent.message && webhookEvent.message.text) {
-          console.log(webhookEvent);
           this.appService.send(webhookEvent);
         }
       });

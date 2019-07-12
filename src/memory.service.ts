@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { History, Message, UserData } from './app.model';
-import { Observable, of } from 'rxjs';
+import { Observable, of, from } from 'rxjs';
 import { FbMessage } from './fb/fb-responses';
 import { ChatState } from './app.state';
 
@@ -29,5 +29,18 @@ export class MemoryService {
     this.histories[idx].data = data;
     this.chatHistories.push(message);
     return of(this.histories[idx]);
+  }
+
+  getAllChatHistory(): Message[] {
+    return this.chatHistories;
+  }
+
+  getChatHistory(id: string): Message {
+    return this.chatHistories.find((chat) => chat.id === id);
+  }
+
+  deleteChatHistory(id: string): void {
+    const idx = this.chatHistories.findIndex((chat) => chat.id === id);
+    this.chatHistories.splice(idx, 1);
   }
 }
