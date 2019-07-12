@@ -8,7 +8,7 @@ import { ChatState } from './app.state';
 import { of } from 'rxjs';
 import { DateUtils } from './utils/date-utils';
 import { EventBus } from '@nestjs/cqrs';
-import { InitChatEvent } from './event';
+import { InitChatEvent, HiChatEvent, FirstNameChatEvent, BirthDateChatEvent } from './event';
 
 @Injectable()
 export class AppService {
@@ -40,65 +40,14 @@ export class AppService {
         this.eventBus.publish(new InitChatEvent(history, fbMessage));
         break;
       case ChatState.HI:
-        this.memoryService
-          .updateHistory(history.id, ChatState.FIRST_NAME, { firstName: fbMessage.message.text, birthDate: null }, chat)
-          .pipe(
-            switchMap((h) =>
-              this.httpClientService.send(history.id, { text: `Great! Nice to meet you ${h.data.firstName}!!` })
-            ),
-            concatMap(() => this.httpClientService.send(history.id, { text: 'May we know your birth date?' }))
-          )
-          .subscribe();
+        this.eventBus.publish(new HiChatEvent(history, fbMessage));
         break;
       case ChatState.FIRST_NAME:
-        const date = DateUtils.convertDate(fbMessage.message.text);
-        this.memoryService
-          .updateHistory(history.id, ChatState.BIRTH_DATE, { firstName: history.data.firstName, birthDate: date }, chat)
-          .pipe(
-            switchMap((h) => {
-              return this.httpClientService.send(history.id, {
-                text: 'Do you wanna know how many days until your birthday?',
-                quick_replies: [
-                  {
-                    content_type: 'text',
-                    title: 'Yes',
-                    payload: FbBasicPayload.YES
-                  },
-                  {
-                    content_type: 'text',
-                    title: 'No',
-                    payload: FbBasicPayload.NO
-                  }
-                ]
-              });
-            })
-          )
-          .subscribe();
+        this.eventBus.publish(new FirstNameChatEvent(history, fbMessage));
         break;
       case ChatState.BIRTH_DATE:
-        this.memoryService
-          .updateHistory(history.id, ChatState.DONE, history.data, chat)
-          .pipe(
-            switchMap((h) => {
-              const days = DateUtils.getDays(h.data.birthDate);
-              const reply: FbReply = {
-                text: this.selectYes(fbMessage)
-                  ? days === 0
-                    ? `HAPPY BIRTHDAY!!🥳🎉🎉`
-                    : `There are ${days} days left until your next birthday`
-                  : 'Good Bye👋'
-              };
-              return this.httpClientService.send(history.id, reply);
-            })
-          )
-          .subscribe();
+          this.eventBus.publish(new BirthDateChatEvent(history, fbMessage));
         break;
     }
-  }
-
-  private selectYes(fbMessage: FbMessage): boolean {
-    const quickReply = fbMessage.message.quick_reply && fbMessage.message.quick_reply.payload === FbBasicPayload.YES;
-    const byText = fbMessage.message.text.split(' ').some((token) => /^(yes|yeah|yup|y|ya|ok)$/.test(token));
-    return quickReply || byText;
   }
 }
