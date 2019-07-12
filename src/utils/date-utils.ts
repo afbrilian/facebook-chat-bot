@@ -12,7 +12,7 @@ export class DateUtils {
     const today = new Date();
     const date = input.getDate() < 10 ? '0' + input.getDate() : input.getDate();
     const month = input.getMonth() + 1 < 10 ? '0' + (input.getMonth() + 1) : input.getMonth() + 1;
-    const year = today.getFullYear() + 1;
+    const year = input.getMonth() < today.getMonth() ? today.getFullYear() + 1 : today.getFullYear();
     input = DateUtils.convertDate(`${year}-${month}-${date}`);
 
     const timeDiff = Math.abs(input.getTime() - today.getTime());
