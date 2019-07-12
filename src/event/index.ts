@@ -1,19 +1,3 @@
-import { InitChatEventHandler, HiChatEventHandler, FirstNameChatHandler, BirthDateChatHandler } from '.';
-import { Provider } from '@nestjs/common';
-
-export const EVENT_HANDLER_PROVIDER: Provider[] = [
-  InitChatEventHandler,
-  HiChatEventHandler,
-  FirstNameChatHandler,
-  BirthDateChatHandler
-];
-export const EVENT_HANDLER_CLASSES: any = {
-  InitChatEventHandler,
-  HiChatEventHandler,
-  FirstNameChatHandler,
-  BirthDateChatHandler
-};
-
 export * from './init-chat.event';
 export * from './init-chat.handler';
 export * from './hi-chat.event';

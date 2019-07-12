@@ -1,14 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { HttpClientService } from './http-client.service';
-import { FbBasicPayload, FbMessage, FbReply } from './fb';
+import { FbMessage } from './fb';
 import { MemoryService } from './memory.service';
 import { History, Message } from './app.model';
-import { filter, flatMap, switchMap, concatMap } from 'rxjs/operators';
+import { filter, flatMap } from 'rxjs/operators';
 import { ChatState } from './app.state';
 import { of } from 'rxjs';
-import { DateUtils } from './utils/date-utils';
 import { EventBus } from '@nestjs/cqrs';
-import { InitChatEvent, HiChatEvent, FirstNameChatEvent, BirthDateChatEvent } from './event';
+import {
+  InitChatEvent,
+  HiChatEvent,
+  FirstNameChatEvent,
+  BirthDateChatEvent,
+  InitChatEventHandler,
+  HiChatEventHandler,
+  FirstNameChatHandler,
+  BirthDateChatHandler
+} from './event';
+
+export const EVENT_HANDLER_CLASSES: any = {
+  InitChatEventHandler,
+  HiChatEventHandler,
+  FirstNameChatHandler,
+  BirthDateChatHandler
+};
 
 @Injectable()
 export class AppService {
@@ -46,7 +61,7 @@ export class AppService {
         this.eventBus.publish(new FirstNameChatEvent(history, fbMessage));
         break;
       case ChatState.BIRTH_DATE:
-          this.eventBus.publish(new BirthDateChatEvent(history, fbMessage));
+        this.eventBus.publish(new BirthDateChatEvent(history, fbMessage));
         break;
     }
   }
