@@ -2,7 +2,7 @@ import { Injectable, HttpService } from '@nestjs/common';
 import { HttpClientService } from './http-client.service';
 import { FbMessage, FbReply } from './fb/fb-responses';
 import { MemoryService } from './memory.service';
-import { History, Message } from './app.model';
+import { History, Message, UserData } from './app.model';
 import { filter, map, finalize, flatMap } from 'rxjs/operators';
 import { ChatState } from './app.state';
 import { of } from 'rxjs';
@@ -45,6 +45,18 @@ export class AppService {
         });
         break;
       case ChatState.HI:
+        const userData: UserData = { firstName: fbMessage.message.text, birthDate: null };
+        this.memoryService.updateHistory(history.id, ChatState.FIRST_NAME, userData, chat).subscribe((h) => {
+          message = { text: `Great! Nice to meet you ${h.data.firstName}!!` };
+          this.httpClientService
+            .send(h.id, message)
+            .pipe(
+              finalize(() =>
+                this.httpClientService.send(history.id, { text: 'May we know your birth date?' }).subscribe()
+              )
+            )
+            .subscribe();
+        });
         break;
       case ChatState.FIRST_NAME:
         break;
