@@ -76,8 +76,17 @@ export class AppService {
           .subscribe();
         break;
       case ChatState.BIRTH_DATE:
-        break;
-      case ChatState.DONE:
+        this.memoryService
+          .updateHistory(history.id, ChatState.DONE, { firstName: fbMessage.message.text, birthDate: null }, chat)
+          .pipe(
+            switchMap((h) => {
+              const days = DateUtils.getDays(h.data.birthDate);
+              return this.httpClientService.send(history.id, {
+                text: days === 0 ? `HAPPY BIRTHDAY!!🥳🎉🎉` : `There are ${days} days left until your next birthday`
+              });
+            })
+          )
+          .subscribe();
         break;
     }
   }

@@ -7,4 +7,16 @@ export class DateUtils {
     const day = Number(data[2]);
     return new Date(year, month, day);
   }
+
+  static getDays(input: Date): number {
+    const today = new Date();
+    const date = input.getDate() < 10 ? '0' + input.getDate() : input.getDate();
+    const month = input.getMonth() + 1 < 10 ? '0' + (input.getMonth() + 1) : input.getMonth() + 1;
+    const year = today.getFullYear() + 1;
+    input = DateUtils.convertDate(`${year}-${month}-${date}`);
+
+    const timeDiff = Math.abs(input.getTime() - today.getTime());
+    const dayDifference = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    return dayDifference;
+  }
 }
