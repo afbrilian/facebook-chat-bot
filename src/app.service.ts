@@ -77,7 +77,7 @@ export class AppService {
         break;
       case ChatState.BIRTH_DATE:
         this.memoryService
-          .updateHistory(history.id, ChatState.DONE, { firstName: fbMessage.message.text, birthDate: null }, chat)
+          .updateHistory(history.id, ChatState.DONE, history.data, chat)
           .pipe(
             switchMap((h) => {
               const days = DateUtils.getDays(h.data.birthDate);
