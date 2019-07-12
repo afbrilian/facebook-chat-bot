@@ -3,8 +3,9 @@ import { HttpClientService } from './http-client.service';
 import { FbMessage, FbReply } from './fb/fb-responses';
 import { MemoryService } from './memory.service';
 import { History, Message } from './app.model';
-import { filter, map, finalize } from 'rxjs/operators';
+import { filter, map, finalize, flatMap } from 'rxjs/operators';
 import { ChatState } from './app.state';
+import { of } from 'rxjs';
 
 @Injectable()
 export class AppService {
@@ -15,11 +16,9 @@ export class AppService {
       .getById(fbMessage.sender.id)
       .pipe(
         filter((history) => !history || (history && history.state !== ChatState.DONE)),
-        map((history) => (history ? history : this.memoryService.createHistory(fbMessage)))
+        flatMap((history) => (history ? of(history) : this.memoryService.createHistory(fbMessage)))
       )
-      .subscribe((history: History) => {
-        this.message(history, fbMessage);
-      });
+      .subscribe((history: History) => this.message(history, fbMessage));
   }
 
   message(history: History, fbMessage: FbMessage): void {
