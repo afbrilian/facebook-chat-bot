@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { HttpClientService } from './http-client.service';
-import { FbBasicPayload, FbMessage } from './fb';
+import { FbBasicPayload, FbMessage, FbReply } from './fb';
 import { MemoryService } from './memory.service';
 import { History, Message } from './app.model';
 import { filter, flatMap, switchMap, concatMap } from 'rxjs/operators';
@@ -81,13 +81,24 @@ export class AppService {
           .pipe(
             switchMap((h) => {
               const days = DateUtils.getDays(h.data.birthDate);
-              return this.httpClientService.send(history.id, {
-                text: days === 0 ? `HAPPY BIRTHDAY!!🥳🎉🎉` : `There are ${days} days left until your next birthday`
-              });
+              const reply: FbReply = {
+                text: this.selectYes(fbMessage)
+                  ? days === 0
+                    ? `HAPPY BIRTHDAY!!🥳🎉🎉`
+                    : `There are ${days} days left until your next birthday`
+                  : 'Good Bye👋'
+              };
+              return this.httpClientService.send(history.id, reply);
             })
           )
           .subscribe();
         break;
     }
+  }
+
+  private selectYes(fbMessage: FbMessage): boolean {
+    const quickReply = fbMessage.message.quick_reply && fbMessage.message.quick_reply.payload === FbBasicPayload.YES;
+    const byText = fbMessage.message.text.split(' ').some((token) => /^(yes|yeah|yup|y|ya|ok)$/.test(token));
+    return quickReply || byText;
   }
 }
