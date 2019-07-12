@@ -7,10 +7,16 @@ import { filter, flatMap, switchMap, concatMap } from 'rxjs/operators';
 import { ChatState } from './app.state';
 import { of } from 'rxjs';
 import { DateUtils } from './utils/date-utils';
+import { EventBus } from '@nestjs/cqrs';
+import { InitChatEvent } from './event';
 
 @Injectable()
 export class AppService {
-  constructor(private readonly memoryService: MemoryService, private readonly httpClientService: HttpClientService) {}
+  constructor(
+    private readonly memoryService: MemoryService,
+    private readonly eventBus: EventBus,
+    private readonly httpClientService: HttpClientService
+  ) {}
 
   send(fbMessage: FbMessage): void {
     this.memoryService
@@ -31,13 +37,7 @@ export class AppService {
 
     switch (history.state) {
       case ChatState.INIT:
-        this.memoryService
-          .updateHistory(history.id, ChatState.HI, null, chat)
-          .pipe(
-            switchMap((h) => this.httpClientService.send(history.id, { text: 'Hi!' })),
-            concatMap(() => this.httpClientService.send(history.id, { text: 'May we know your first name?' }))
-          )
-          .subscribe();
+        this.eventBus.publish(new InitChatEvent(history, fbMessage));
         break;
       case ChatState.HI:
         this.memoryService
