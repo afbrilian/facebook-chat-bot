@@ -1,9 +1,9 @@
-import { Injectable, HttpService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { HttpClientService } from './http-client.service';
-import { FbMessage, FbReply } from './fb/fb-responses';
+import { FbMessage } from './fb/fb-responses';
 import { MemoryService } from './memory.service';
 import { History, Message, UserData } from './app.model';
-import { filter, map, finalize, flatMap } from 'rxjs/operators';
+import { filter, flatMap, switchMap, concatMap } from 'rxjs/operators';
 import { ChatState } from './app.state';
 import { of } from 'rxjs';
 
@@ -22,8 +22,6 @@ export class AppService {
   }
 
   message(history: History, fbMessage: FbMessage): void {
-    let message: FbReply;
-
     const chat: Message = {
       id: fbMessage.message.mid,
       text: fbMessage.message.text,
@@ -32,31 +30,25 @@ export class AppService {
 
     switch (history.state) {
       case ChatState.INIT:
-        this.memoryService.updateHistory(history.id, ChatState.HI, null, chat).subscribe((h) => {
-          message = { text: 'Hi!' };
-          this.httpClientService
-            .send(h.id, message)
-            .pipe(
-              finalize(() =>
-                this.httpClientService.send(history.id, { text: 'May we know your first name?' }).subscribe()
-              )
-            )
-            .subscribe();
-        });
+        this.memoryService
+          .updateHistory(history.id, ChatState.HI, null, chat)
+          .pipe(
+            switchMap((h) => this.httpClientService.send(history.id, { text: 'Hi!' })),
+            concatMap(() => this.httpClientService.send(history.id, { text: 'May we know your first name?' }))
+          )
+          .subscribe();
         break;
       case ChatState.HI:
         const userData: UserData = { firstName: fbMessage.message.text, birthDate: null };
-        this.memoryService.updateHistory(history.id, ChatState.FIRST_NAME, userData, chat).subscribe((h) => {
-          message = { text: `Great! Nice to meet you ${h.data.firstName}!!` };
-          this.httpClientService
-            .send(h.id, message)
-            .pipe(
-              finalize(() =>
-                this.httpClientService.send(history.id, { text: 'May we know your birth date?' }).subscribe()
-              )
-            )
-            .subscribe();
-        });
+        this.memoryService
+          .updateHistory(history.id, ChatState.FIRST_NAME, userData, chat)
+          .pipe(
+            switchMap((h) =>
+              this.httpClientService.send(history.id, { text: `Great! Nice to meet you ${h.data.firstName}!!` })
+            ),
+            concatMap(() => this.httpClientService.send(history.id, { text: 'May we know your birth date?' }))
+          )
+          .subscribe();
         break;
       case ChatState.FIRST_NAME:
         break;
