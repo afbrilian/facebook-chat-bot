@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { FbMessageEntry, FbEntry, FbMessage } from './fb/fb-responses';
 import { Message } from './app.model';
 import { MemoryService } from './memory.service';
-import { map } from 'rxjs/operators';
 
 @Controller()
 export class AppController {

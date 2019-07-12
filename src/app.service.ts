@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { HttpClientService } from './http-client.service';
 import { FbMessage } from './fb';
 import { MemoryService } from './memory.service';
 import { History } from './app.model';
