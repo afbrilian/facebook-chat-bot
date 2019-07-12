@@ -9,7 +9,7 @@ export class DateUtils {
   }
 
   static getDays(input: Date): number {
-    const today = new Date();
+    const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
     const date = input.getDate() < 10 ? '0' + input.getDate() : input.getDate();
     const month = input.getMonth() + 1 < 10 ? '0' + (input.getMonth() + 1) : input.getMonth() + 1;
     const year = input.getMonth() < today.getMonth() ? today.getFullYear() + 1 : today.getFullYear();
